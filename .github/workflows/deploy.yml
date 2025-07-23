@@ -68,3 +68,4 @@ jobs:
             git push origin main
           else
             echo "Folder $FOLDER does not exist. Skipping."
+          fi
