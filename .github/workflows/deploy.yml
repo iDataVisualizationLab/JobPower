@@ -5,7 +5,6 @@ on:
     branches: [main]
     tags: ['v*']
   delete:
-    tags: ['v*']
 
 jobs:
   deploy:
@@ -20,14 +19,14 @@ jobs:
       - name: Create clean deploy folder (exclude versions/, .github/)
         run: |
           mkdir deploy
-          rsync -av --exclude=versions --exclude=.github --exclude=.git ./ ./deploy/
+          rsync -av --exclude=versions --exclude=.github --exclude=.git ./ ./deploy/ .gitignore README.md
 
       - name: Copy to versions/ on tag push
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           TAG_NAME="${GITHUB_REF##refs/tags/}"
           mkdir -p "versions/JobPower_${TAG_NAME}"
-          rsync -av --exclude=versions --exclude=.github --exclude=.git ./ "versions/JobPower_${TAG_NAME}/"
+          rsync -av --exclude=versions --exclude=.github --exclude=.git ./ "versions/JobPower_${TAG_NAME}/ .gitignore README.md"
 
       - name: Commit version folder
         if: startsWith(github.ref, 'refs/tags/')
@@ -47,7 +46,7 @@ jobs:
           publish_dir: ./deploy
 
   cleanup:
-    if: github.event_name == 'delete' && startsWith(github.event.ref, 'v')
+    if: github.event_name == 'delete' && startsWith(github.event.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
