@@ -20,6 +20,7 @@ To create a new version (for example, `v2.0.0`), use the following commands:
 git tag v2.0.0
 git push origin v2.0.0
 ```
+> **🚨 Important:** Tags must include the `v` prefix (e.g., `v1.0.0`, `v2.0.0`) to work correctly with the automated workflow.
 
 #### This will:
 

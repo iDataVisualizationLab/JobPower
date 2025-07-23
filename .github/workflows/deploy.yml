@@ -16,17 +16,30 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Create clean deploy folder (exclude versions/, .github/)
+      - name: Create clean deploy folder (exclude versions/, .github/, .gitignore, README.md)
         run: |
-          mkdir deploy
-          rsync -av --exclude=versions --exclude=.github --exclude=.git ./ ./deploy/ .gitignore README.md
+          mkdir -p deploy
+          rsync -av \
+            --exclude=versions \
+            --exclude=.github \
+            --exclude=.git \
+            --exclude=.gitignore \
+            --exclude=README.md \
+            ./ ./deploy/
 
       - name: Copy to versions/ on tag push
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           TAG_NAME="${GITHUB_REF##refs/tags/}"
           mkdir -p "versions/JobPower_${TAG_NAME}"
-          rsync -av --exclude=versions --exclude=.github --exclude=.git ./ "versions/JobPower_${TAG_NAME}/ .gitignore README.md"
+          rsync -av \
+            --exclude=versions \
+            --exclude=.github \
+            --exclude=.git \
+            --exclude=.gitignore \
+            --exclude=README.md \
+            ./ "versions/JobPower_${TAG_NAME}/"
+
 
       - name: Commit version folder
         if: startsWith(github.ref, 'refs/tags/')
