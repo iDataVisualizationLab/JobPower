@@ -64,22 +64,20 @@ jobs:
           publish_dir: ./deploy
 
   cleanup:
-    if: github.event_name == 'delete'
+    if: github.event_name == 'delete' && github.event.ref_type == 'tag' && startsWith(github.event.ref, 'v')
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        if: startsWith(github.event.ref, 'refs/tags/v')
-        uses: actions/checkout@v4
-        with:
-          ref: main
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Debug delete event info
+      - name: Delete event info
         run: |
           echo "Event: $GITHUB_EVENT_NAME"
           echo "Ref: $GITHUB_REF"
           echo "Event ref: ${{ github.event.ref }}"
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Delete version folder
-        if: startsWith(github.event.ref, 'refs/tags/v')
         run: |
           TAG_NAME="${GITHUB_EVENT_REF#refs/tags/}"
           FOLDER="versions/JobPower_${TAG_NAME}"
