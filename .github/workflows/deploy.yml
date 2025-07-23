@@ -99,7 +99,7 @@ jobs:
             echo "Nothing to commit"
           else
             git commit -m "Add ${REPO} version ${TAG_NAME}"
-            git push origin main
+            git push origin HEAD:main
           fi
 
   cleanup:
