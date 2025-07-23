@@ -25,6 +25,7 @@ jobs:
 
       - name: Copy selected version to deploy/
         run: |
+          REPO="${GITHUB_REPOSITORY##*/}"
           mkdir -p deploy
           DEPLOY_VERSION="${{ steps.version.outputs.version }}"
 
@@ -39,7 +40,7 @@ jobs:
               --exclude=deploy.json \
               ./ ./deploy/
           else
-            VERSION_FOLDER="versions/JobPower_${DEPLOY_VERSION}"
+            VERSION_FOLDER="versions/${REPO}_${DEPLOY_VERSION}"
             if [ -d "$VERSION_FOLDER" ]; then
               echo "Deploying from $VERSION_FOLDER"
               rsync -av "$VERSION_FOLDER/" ./deploy/
@@ -73,8 +74,9 @@ jobs:
           fetch-depth: 0
       - name: Copy to versions/ on tag push
         run: |
+          REPO="${GITHUB_REPOSITORY##*/}"
           TAG_NAME="${GITHUB_REF##refs/tags/}"
-          mkdir -p "versions/JobPower_${TAG_NAME}"
+          mkdir -p "versions/${REPO}_${TAG_NAME}"
           rsync -av \
             --exclude=versions \
             --exclude=.github \
@@ -82,20 +84,21 @@ jobs:
             --exclude=.gitignore \
             --exclude=README.md \
             --exclude=deploy.json \
-            ./ "versions/JobPower_${TAG_NAME}/"
+            ./ "versions/${REPO}_${TAG_NAME}/"
 
 
       - name: Commit version folder
         run: |
+          REPO="${GITHUB_REPOSITORY##*/}"
           TAG_NAME="${GITHUB_REF##refs/tags/}"
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add "versions/JobPower_${TAG_NAME}"
+          git add "versions/${REPO}_${TAG_NAME}"
 
           if git diff --cached --quiet; then
             echo "Nothing to commit"
           else
-            git commit -m "Add JobPower version ${TAG_NAME}"
+            git commit -m "Add ${REPO} version ${TAG_NAME}"
             git push origin main
           fi
 
@@ -115,8 +118,9 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Delete version folder
         run: |
+          REPO="${GITHUB_REPOSITORY##*/}"
           TAG_NAME="${{ github.event.ref }}"
-          FOLDER="versions/JobPower_${TAG_NAME}"
+          FOLDER="versions/${REPO}_${TAG_NAME}"
           if [ -d "$FOLDER" ]; then
             git config user.name github-actions
             git config user.email github-actions@github.com
