@@ -4,11 +4,13 @@ on:
   push:
     branches: [main]
     tags: ['v*']
+  delete:
+    tags: ['v*']
 
 jobs:
   deploy:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -43,3 +45,26 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: ./deploy
+
+  cleanup:
+    if: github.event_name == 'delete' && startsWith(github.event.ref, 'v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Delete version folder
+        run: |
+          TAG_NAME="${GITHUB_EVENT_REF#refs/tags/}"
+          FOLDER="versions/JobPower_${TAG_NAME}"
+          if [ -d "$FOLDER" ]; then
+            git config user.name github-actions
+            git config user.email github-actions@github.com
+            git rm -r "$FOLDER"
+            git commit -m "Delete version folder for deleted tag ${TAG_NAME}"
+            git push origin main
+          else
+            echo "Folder $FOLDER does not exist. Skipping."
